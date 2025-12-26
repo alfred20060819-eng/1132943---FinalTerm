@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>1132943 - FinalTerm</title>
+    <title>九路圍棋 - 強力警示版</title>
     <style>
         /* --- 1. 全局設定 --- */
         :root {
@@ -12,8 +12,7 @@
             --bg-gradient: linear-gradient(135deg, #1a1c20, #0f1012);
             --glass-bg: rgba(255, 255, 255, 0.08);
             --glass-border: 1px solid rgba(255, 255, 255, 0.1);
-            --primary-color: #4facfe;
-            --accent-color: #ff5858;
+            --accent-color: #ff4757;
         }
 
         body {
@@ -40,7 +39,7 @@
             box-sizing: border-box;
         }
 
-        /* --- 2. 抬頭狀態列 (Glassmorphism) --- */
+        /* --- 2. 狀態列 --- */
         .header-panel {
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
@@ -55,49 +54,36 @@
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
             transition: all 0.3s ease;
         }
-
         .turn-indicator {
             width: 12px; height: 12px; border-radius: 50%;
-            background: #555;
-            box-shadow: 0 0 10px #555;
-            transition: 0.3s;
+            background: #555; box-shadow: 0 0 10px #555; transition: 0.3s;
         }
         .turn-black .turn-indicator { background: #000; box-shadow: 0 0 15px #000, 0 0 5px #fff; border: 1px solid #444; }
         .turn-white .turn-indicator { background: #fff; box-shadow: 0 0 15px #fff; }
-
         .status-text { font-size: 1.2rem; font-weight: bold; letter-spacing: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
-        /* --- 3. 棋盤區域 (RWD 自適應) --- */
+        /* --- 3. 棋盤區域 --- */
         .board-wrapper {
             position: relative;
             width: 100%;
-            max-width: 450px; /* 最大寬度 */
-            aspect-ratio: 1 / 1; /* 保持正方形 */
-            padding: 25px; /* 給座標留空間 */
+            max-width: 450px;
+            aspect-ratio: 1 / 1;
+            padding: 25px;
             background: #dcb35c;
             border-radius: 5px;
-            box-shadow: 
-                0 20px 50px rgba(0,0,0,0.5),
-                inset 0 0 60px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 60px rgba(0,0,0,0.1);
             box-sizing: border-box;
         }
 
-        /* 座標標籤 */
         .coord-label {
-            position: absolute;
-            font-size: 0.75rem;
-            color: #5d4037;
-            font-weight: bold;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: absolute; font-size: 0.75rem; color: #5d4037; font-weight: bold;
+            display: flex; justify-content: center; align-items: center;
         }
         .coord-top { top: 2px; height: 20px; }
         .coord-left { left: 2px; width: 20px; }
 
         #board {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             display: grid;
             grid-template-columns: repeat(9, 1fr);
             grid-template-rows: repeat(9, 1fr);
@@ -105,18 +91,13 @@
         }
 
         .cell { position: relative; cursor: pointer; }
-
-        /* 格線 */
         .cell::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: var(--line-color); }
         .cell::after { content: ''; position: absolute; left: 50%; top: 0; height: 100%; width: 1px; background: var(--line-color); }
-        
-        /* 邊緣收線 */
         .cell[data-col="0"]::before { left: 50%; width: 50%; }
         .cell[data-col="8"]::before { width: 50%; }
         .cell[data-row="0"]::after { top: 50%; height: 50%; }
         .cell[data-row="8"]::after { height: 50%; }
 
-        /* 星位 */
         .star {
             position: absolute; width: 20%; height: 20%;
             background: var(--line-color); border-radius: 50%;
@@ -124,23 +105,16 @@
             box-shadow: 0 1px 1px rgba(255,255,255,0.3);
         }
 
-        /* --- 4. 棋子視覺優化 --- */
+        /* --- 4. 棋子視覺 --- */
         .stone {
             width: 90%; height: 90%; border-radius: 50%;
             position: absolute; top: 5%; left: 5%; z-index: 10;
             box-shadow: 1px 2px 4px rgba(0,0,0,0.6), inset 0 -2px 6px rgba(0,0,0,0.3);
             transition: transform 0.1s;
         }
-        /* 黑子 (雲子質感：微透綠) */
-        .stone.black {
-            background: radial-gradient(circle at 30% 30%, #666, #1a1a1a 80%);
-        }
-        /* 白子 (蛤碁石質感：微黃白) */
-        .stone.white {
-            background: radial-gradient(circle at 30% 30%, #fff, #f0f0f0 60%, #ddd);
-        }
+        .stone.black { background: radial-gradient(circle at 30% 30%, #666, #1a1a1a 80%); }
+        .stone.white { background: radial-gradient(circle at 30% 30%, #fff, #f0f0f0 60%, #ddd); }
 
-        /* 最後一手標記 */
         .stone.last::after {
             content: ''; position: absolute; width: 25%; height: 25%;
             background: var(--accent-color); border-radius: 50%;
@@ -148,27 +122,35 @@
             box-shadow: 0 0 5px var(--accent-color);
         }
 
-        /* 預覽虛影 */
-        .cell:hover:not(:has(.stone))::after {
-            content: ''; position: absolute; width: 40%; height: 40%;
-            background: rgba(0,0,0,0.2); border-radius: 50%;
-            top: 30%; left: 30%; z-index: 5;
+        /* --- 🔴 強力叫吃警告 (High Visibility Atari) --- */
+        @keyframes emergencyPulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.8); }
+            70% { box-shadow: 0 0 0 8px rgba(255, 71, 87, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); }
         }
 
-        /* 死子 */
+        .stone.atari {
+            animation: emergencyPulse 1s infinite;
+            z-index: 20;
+        }
+
+        /* 驚嘆號標記 */
+        .stone.atari::before {
+            content: '!'; position: absolute; top: -5px; right: -5px;
+            width: 18px; height: 18px; background: #ff4757; color: white;
+            border-radius: 50%; font-size: 13px; font-weight: 900;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5); border: 2px solid #fff;
+        }
+
+        /* 死子樣式 */
         .stone.dead { opacity: 0.4; filter: grayscale(100%); transform: scale(0.8); }
         .stone.dead::before {
             content: '✕'; color: red; font-weight: 900; position: absolute;
             font-size: 1.5rem; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            /* 重置 Atari 樣式 */
+            background: transparent; border: none; box-shadow: none; width: auto; height: auto;
         }
-
-        /* 叫吃警告 */
-        @keyframes atariPulse {
-            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
-            70% { box-shadow: 0 0 0 6px rgba(231, 76, 60, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
-        }
-        .stone.atari { animation: atariPulse 1.5s infinite; }
 
         /* 地盤 */
         .territory-black::after {
@@ -178,6 +160,13 @@
         .territory-white::after {
             content: ''; position: absolute; width: 25%; height: 25%;
             background: rgba(255, 255, 255, 0.7); border-radius: 50%; top: 37.5%; left: 37.5%;
+        }
+
+        /* 預覽虛影 */
+        .cell:hover:not(:has(.stone))::after {
+            content: ''; position: absolute; width: 40%; height: 40%;
+            background: rgba(0,0,0,0.2); border-radius: 50%;
+            top: 30%; left: 30%; z-index: 5;
         }
 
         /* --- 5. 動畫 --- */
@@ -194,30 +183,14 @@
         }
         .stone.captured-anim { animation: vanish 0.3s forwards; pointer-events: none; }
 
-        /* --- 6. 控制面板 --- */
+        /* --- 6. UI 控制 --- */
         .controls {
-            margin-top: 30px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            width: 100%;
+            margin-top: 30px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%;
         }
-
         button {
-            background: var(--glass-bg);
-            border: var(--glass-border);
-            color: #fff;
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            backdrop-filter: blur(5px);
-            transition: all 0.2s;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
+            background: var(--glass-bg); border: var(--glass-border); color: #fff; padding: 15px;
+            border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer;
+            backdrop-filter: blur(5px); transition: all 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px;
         }
         button:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-2px); }
         button:active { transform: translateY(0); }
@@ -227,35 +200,31 @@
         .btn-danger { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); border: none; color: #333; }
         .btn-success { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); border: none; color: #333; grid-column: span 2; display: none; }
 
-        /* --- 彈窗 --- */
+        /* 彈窗 */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px);
             display: none; justify-content: center; align-items: center; z-index: 100;
         }
         .modal {
-            background: #222; padding: 40px; border-radius: 20px;
-            text-align: center; border: 1px solid #444;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-            max-width: 90%; width: 350px;
+            background: #222; padding: 40px; border-radius: 20px; text-align: center; border: 1px solid #444;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5); max-width: 90%; width: 350px;
         }
         .score-row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 5px; }
         .winner-text { font-size: 2rem; margin: 20px 0; background: linear-gradient(to right, #f83600 0%, #f9d423 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
-
     </style>
 </head>
 <body>
 
 <div class="game-container">
-    
     <div id="headerPanel" class="header-panel turn-black">
         <div class="turn-indicator"></div>
         <div id="statusText" class="status-text">黑棋回合</div>
     </div>
 
     <div class="board-wrapper">
-        <div id="coordContainer"></div> <div id="board"></div>
+        <div id="coordContainer"></div>
+        <div id="board"></div>
     </div>
 
     <div class="controls">
@@ -266,7 +235,6 @@
         <button class="btn-primary" onclick="game.newGame()">🔄 新局</button>
         <button class="btn-success" onclick="game.finishScoring()" id="btnFinish">✅ 確認死子並結算</button>
     </div>
-
 </div>
 
 <div id="modalOverlay" class="modal-overlay">
@@ -280,50 +248,33 @@
 </div>
 
 <script>
-// --- 音效控制器 (Web Audio API) ---
+// --- 音效控制器 ---
 class AudioController {
-    constructor() {
-        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    
-    // 落子聲：短促清脆的敲擊
+    constructor() { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
     playStone() {
         if(this.ctx.state === 'suspended') this.ctx.resume();
         const t = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        
-        // 模擬木頭敲擊：正弦波快速衰減
         osc.frequency.setValueAtTime(800, t);
         osc.frequency.exponentialRampToValueAtTime(100, t + 0.1);
-        
         gain.gain.setValueAtTime(0.5, t);
         gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
-        
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(t);
-        osc.stop(t + 0.1);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(t); osc.stop(t + 0.1);
     }
-
-    // 提子聲：較高頻的悅耳聲
     playCapture() {
         if(this.ctx.state === 'suspended') this.ctx.resume();
         const t = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(600, t);
         osc.frequency.linearRampToValueAtTime(1200, t + 0.1);
-        
         gain.gain.setValueAtTime(0.3, t);
         gain.gain.linearRampToValueAtTime(0.01, t + 0.2);
-        
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(t);
-        osc.stop(t + 0.2);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(t); osc.stop(t + 0.2);
     }
 }
 
@@ -360,15 +311,11 @@ class GoGame {
         const finish = document.getElementById('btnFinish');
         
         if (state === 'PLAY') {
-            pass.style.display = 'flex';
-            force.style.display = 'flex';
-            ai.style.display = 'flex';
+            pass.style.display = 'flex'; force.style.display = 'flex'; ai.style.display = 'flex';
             finish.style.display = 'none';
             document.getElementById('headerPanel').classList.remove('phase-scoring');
         } else {
-            pass.style.display = 'none';
-            force.style.display = 'none';
-            ai.style.display = 'none';
+            pass.style.display = 'none'; force.style.display = 'none'; ai.style.display = 'none';
             finish.style.display = 'flex';
             document.getElementById('headerPanel').classList.add('phase-scoring');
         }
@@ -377,27 +324,19 @@ class GoGame {
     renderCoordinates() {
         const container = document.getElementById('coordContainer');
         container.innerHTML = '';
-        const cols = 'ABCDEFGHJ'.split(''); // 跳過 I
+        const cols = 'ABCDEFGHJ'.split(''); 
         const rows = [9,8,7,6,5,4,3,2,1];
-        
-        // 生成上方字母
         cols.forEach((char, i) => {
             const el = document.createElement('div');
-            el.className = 'coord-label coord-top';
-            el.innerText = char;
+            el.className = 'coord-label coord-top'; el.innerText = char;
             el.style.left = `calc(${(100/9) * i}% + 50% / 9)`;
-            el.style.transform = 'translateX(-50%)';
-            container.appendChild(el);
+            el.style.transform = 'translateX(-50%)'; container.appendChild(el);
         });
-
-        // 生成左側數字
         rows.forEach((num, i) => {
             const el = document.createElement('div');
-            el.className = 'coord-label coord-left';
-            el.innerText = num;
+            el.className = 'coord-label coord-left'; el.innerText = num;
             el.style.top = `calc(${(100/9) * i}% + 50% / 9)`;
-            el.style.transform = 'translateY(-50%)';
-            container.appendChild(el);
+            el.style.transform = 'translateY(-50%)'; container.appendChild(el);
         });
     }
 
@@ -454,9 +393,11 @@ class GoGame {
         for(let r=0; r<this.size; r++) {
             for(let c=0; c<this.size; c++) {
                 if(this.board[r][c] !== 0 && !visited.has(`${r},${c}`)) {
-                    const g = this.getGroup(this.board, r, c);
-                    g.stones.forEach(s => visited.add(`${s.r},${s.c}`));
-                    if (g.liberties === 1) g.stones.forEach(s => atariSet.add(`${s.r},${s.c}`));
+                    const group = this.getGroup(this.board, r, c);
+                    group.stones.forEach(s => visited.add(`${s.r},${s.c}`));
+                    if (group.liberties === 1) {
+                        group.stones.forEach(s => atariSet.add(`${s.r},${s.c}`));
+                    }
                 }
             }
         }
@@ -522,7 +463,7 @@ class GoGame {
             }
         });
 
-        this.audio.playStone(); // 播放落子聲
+        this.audio.playStone();
         
         this.board[r][c] = this.turn;
         this.lastMoveCoord = {r, c};
@@ -533,7 +474,7 @@ class GoGame {
         if(newCell && newCell.lastChild) newCell.lastChild.classList.add('new-move');
 
         if (capturedStones.length > 0) {
-            this.audio.playCapture(); // 播放提子聲
+            this.audio.playCapture();
             capturedStones.forEach(s => {
                 const deadCell = document.querySelector(`.cell[data-r="${s.r}"][data-c="${s.c}"]`);
                 if (deadCell && deadCell.lastChild) {
@@ -559,7 +500,7 @@ class GoGame {
         if (this.aiEnabled && this.turn === -1) setTimeout(() => this.aiMove(), 500);
     }
 
-    // --- 高階 AI ---
+    // --- 大師級 AI (包含戰術) ---
     aiMove() {
         if (this.phase !== 'PLAY') return;
         const candidates = [];
@@ -596,7 +537,7 @@ class GoGame {
                 if (this.isCut(r, c, -1)) score += 45;
                 if (this.isHane(r, c, -1)) score += 35;
                 if (this.connectsMyGroups(r, c, -1)) score += 40;
-                if (this.isEmptyTriangle(r, c, -1)) score -= 40; // 愚型
+                if (this.isEmptyTriangle(r, c, -1)) score -= 40;
 
                 // 5. 避免送死
                 const myNewGroup = this.getGroup(nextBoard, r, c);
@@ -623,7 +564,6 @@ class GoGame {
         }
     }
 
-    // AI Helpers
     findAtariGroups(color) {
         const groups = []; const visited = new Set();
         for(let r=0; r<this.size; r++) for(let c=0; c<this.size; c++) {
@@ -680,7 +620,6 @@ class GoGame {
         return true;
     }
 
-    // Tools
     countStonesOnBoard(board, color) {
         let c = 0;
         for(let i=0; i<9; i++) for(let j=0; j<9; j++) if(board[i][j]===color) c++;
@@ -727,7 +666,8 @@ class GoGame {
         this.turn = -this.turn;
         this.passes++;
         this.lastMoveCoord = null;
-        this.showStatus(this.turn === 1 ? "⚪ 白棋虛手" : "🖤 黑棋虛手", true);
+        const name = this.turn === 1 ? "⚪ 白棋" : "🖤 黑棋"; 
+        this.showStatus(`${name} 虛手 (Pass)`, true);
         if (this.passes >= 2) setTimeout(() => this.autoJudgeAndEnd(), 800);
         else {
             this.updateUI();
